@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: backend
+  labels:
+    app: backend
+    maintainer: vikas
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend-pod
+  template:
+    metadata:
+      name: backend-pod
+      labels:
+        app: backend-pod
+    spec:
+      containers:
+        - name: backend-pod
+          image: vikasprince/MERN-Backend:v1
+          imagePullPolicy: ifNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: "MONGODB_URL"
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secrets
+                  value: querystring
+            - name: "PORT"
+              valueFrom:
+                configKeyRef:
+                  name: mongo-port
+                  value: port
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "1"
+        requests:
+          memory: "500Mb"
+          cpu: "0.5m"
+      livenessProbes:
+        httpGet:
+          path: "/health"
+          port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 5
+      readinessProbes:
+        httpGet:
+          path: "/health"
+          port: 8080
+        initialDelaySeconds: 60
+        periodSeconds: 5
