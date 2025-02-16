@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-full-stack-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Vikas-Prince/Food-Delivery-gitOps.git
+    targetRevision: HEAD
+    path: base
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - SyncWave: "0"
+      - SyncWave: "1"
