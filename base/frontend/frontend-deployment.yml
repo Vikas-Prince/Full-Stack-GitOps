@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: frontend
+  labels:
+    app: frontend-deployment
+    maintainer: vikas
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend-pod
+  template:
+    metadata:
+      name: frontend-pod
+      labels:
+        app: frontend-pod
+    spec:
+      containers:
+        - name: frontend-containers
+          image: vikasprince/MERN-Frontend:v1-blue
+          ports:
+            - containerPort: 80
+          env:
+            - name: REACT_APP_API_URL
+              value: "http://backend-service.backend.svc.cluster.local:8080"
+            - name: REACT_APP_POST_API_URL
+              value: "http://backend-service.backend.svc.cluster.local:8080/orders"
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "1m"
+        requests:
+          memory: "0.5Gi"
+          cpu: "0.5m"
+      livenessProbe:
+        httpGet:
+          path: "/"
+          port: 80
+        initialDelaySeconds: 30
+        periodSeconds: 5
+        failureThreshold: 5
+      readinessProbe:
+        httpGet:
+          path: "/"
+          port: 80
+        initialDelaySeconds: 30
+        periodSeconds: 5
+        failureThreshold: 5
