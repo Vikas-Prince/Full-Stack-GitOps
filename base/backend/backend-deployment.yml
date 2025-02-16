@@ -6,6 +6,8 @@ metadata:
   labels:
     app: backend
     maintainer: vikas
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   replicas: 3
   selector:
