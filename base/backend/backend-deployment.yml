@@ -10,6 +10,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
 spec:
   replicas: 3
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app: backend-pod
@@ -28,14 +29,11 @@ spec:
           env:
             - name: "MONGODB_URL"
               valueFrom:
-                secretKeyRef:
-                  name: mongo-secrets
+                configMapKeyRef:
+                  name: mongo-url
                   value: querystring
             - name: "PORT"
-              valueFrom:
-                configKeyRef:
-                  name: mongo-port
-                  value: port
+              value: 8080
       resources:
         limits:
           memory: "1Gi"
