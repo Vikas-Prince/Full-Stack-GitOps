@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backend-stable
+spec:
+  destination:
+    namespace: backend
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://github.com/my-org/gitops-repo.git
+    targetRevision: HEAD
+    path: overlays/green
+    kustomize:
+      namePrefix: green-
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

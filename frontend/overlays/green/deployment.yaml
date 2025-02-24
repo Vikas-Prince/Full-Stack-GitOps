@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-green
+  namespace: frontend
+  labels:
+    app: frontend-active
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend-active
+  template:
+    metadata:
+      labels:
+        app: frontend-active
+    spec:
+      containers:
+        - name: frontend-container
+          image: vikasprince/MERN-Frontend:v2-green
+          ports:
+            - containerPort: 80

@@ -1,6 +1,0 @@
-namespace: frontend
-resources:
-  - ../namespace/frontend-ns.yml
-  - ./fronted-deployment.yml
-  - ./frontend-service.yml
-  - ./frontend-hpa.yml
