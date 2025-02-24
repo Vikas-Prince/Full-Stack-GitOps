@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-stable
+  labels:
+    app: backend-active
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: backend
+          image: vikasprince/MERN-Backend:v1 # STABLE IMAGE

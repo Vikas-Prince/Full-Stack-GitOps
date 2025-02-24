@@ -1,6 +1,0 @@
-namespace: backend
-resources:
-  - ../namespace/backend-ns.yml
-  - backend-deployment.yml
-  - backend-service.yml
-  - backend-hpa.yml
