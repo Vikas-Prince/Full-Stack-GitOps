@@ -1,115 +1,116 @@
-# Full-Stack Application Deployment with GitOps
+# Full Stack Application Deployment with GitOps and ArgoCD
 
 ## Overview
 
-This repository is designed to deploy a **Full-Stack MERN Application** on a Kubernetes (EKS) cluster using **ArgoCD** for continuous delivery and **GitOps** principles. The repository employs a **modular infrastructure** for managing backend, frontend, and MongoDB deployment. It follows best practices and enterprise standards, keeping each layer (MongoDB, Backend, Frontend) as distinct resources.
+This repository demonstrates a **GitOps-driven deployment** for both **frontend** and **backend** applications using **ArgoCD** as the continuous deployment tool. The repository provides a clean and scalable setup for deploying both applications in a Kubernetes environment while following **best practices** and **deployment strategies**.
 
-The deployment process ensures that the **Backend** service is deployed first, followed by the **Frontend**. This is achieved by leveraging **Sync Waves** in ArgoCD, which ensures the right order of deployment.
+The **GitOps principles** ensure that the entire deployment lifecycle, including updates and rollbacks, is automated, declarative, and version-controlled, all managed through ArgoCD.
 
-### Key Technologies and Tools
+## Key Concepts and Strategies
 
-- **GitOps**: A Kubernetes deployment model where the Git repository is the source of truth for the application’s desired state.
-- **ArgoCD**: A continuous delivery tool for Kubernetes that allows declarative management of applications from Git repositories.
-- **Kubernetes (EKS)**: A managed Kubernetes service from AWS for deploying containerized applications.
-- **Sync Waves**: A feature in ArgoCD that enables you to control the order of resource deployments.
+### Backend Deployment: **Canary Deployment Strategy**
 
-## Repository Structure
+For the **backend application**, we have implemented a **Canary Deployment strategy**. This allows us to:
 
-This repository follows the **standard GitOps structure** and is organized as follows:
+- Gradually release the new version of the backend service.
+- Route a small percentage of traffic to the new version while the stable version (canary) continues serving the majority of users.
+- Ensure minimal risk while deploying new versions, and making the rollback easier if issues arise in production.
 
-```bash
-gitops-repo/
-├── base/
-│   ├── backend/
-│   │   ├── backend-deployment.yaml         # Backend Deployment Manifest
-│   │   ├── backend-service.yaml            # Backend Service Manifest
-│   │   ├── backend-hpa.yaml                # HorizontalPodAutoscaler for Backend
-│   │   └── kustomization.yaml              # Kustomization for Backend
-│   ├── frontend/
-│   │   ├── frontend-deployment.yaml        # Frontend Deployment Manifest
-│   │   ├── frontend-service.yaml           # Frontend Service Manifest
-│   │   ├── frontend-hpa.yaml               # HorizontalPodAutoscaler for Frontend
-│   │   └── kustomization.yaml              # Kustomization for Frontend
-│   ├── namespaces/
-│   │   ├── backend-ns.yaml                 # Namespace for Backend
-│   │   └── frontend-ns.yaml                # Namespace for Frontend
-├── README.md                               # Project Documentation
-├── argo-app.yaml                           # ArgoCD Application Manifest
+In this setup:
 
-```
+- The **stable (v1.1)** version of the backend application remains active.
+- A small portion of traffic is routed to the **new (v1.2)** version.
+- If the new version proves stable, traffic is fully shifted to the v1.2 version, and the old v1.1 can be scaled down or removed.
 
-## How It Works
+### Frontend Deployment: **Blue-Green Deployment Strategy**
 
-### 1. ArgoCD Application Deployment
+For the **frontend application**, a **Blue-Green Deployment strategy** is used. This strategy ensures **zero-downtime updates** for the frontend application. In this setup:
 
-The application is managed and deployed using **ArgoCD**, a GitOps continuous delivery tool for Kubernetes. ArgoCD ensures that the state of the cluster matches the desired state stored in this Git repository. This Git repository serves as the source of truth for deploying backend and frontend applications to the Kubernetes cluster.
+- The **blue** environment serves the current stable version of the frontend.
+- The **green** environment serves the new version of the frontend.
+- After the green version is deployed and validated, traffic is switched from blue to green.
 
-### 2. Sequential Deployment using Sync Waves
+This ensures that the users will always have access to a stable version of the frontend while the new version is tested and validated before it's fully promoted.
 
-To ensure the backend is deployed before the frontend, **Sync Waves** are utilized. Sync Waves in ArgoCD allow you to define the sequence in which Kubernetes resources should be deployed. The sync wave system uses annotations to determine the order of deployment.
+### GitOps with ArgoCD
 
-- **Backend Deployment**: The backend application is deployed first.
-- **Frontend Deployment**: After the backend is successfully deployed, the frontend application is deployed.
+ArgoCD is used for managing the deployment of both the frontend and backend applications. ArgoCD continuously syncs the Git repository with the Kubernetes cluster, automatically deploying changes as they are pushed to the repository.
 
-By applying sync waves, we control the deployment order so that the frontend waits for the backend to be ready before it starts.
+### Key Components of the Repo
 
-### 3. Modular Infrastructure
+1. **Frontend Application**:
 
-The infrastructure is modular, allowing for flexibility in managing and scaling individual components.
+   - **Deployment Strategy**: Blue-Green Deployment
+   - **Kubernetes Resources**: Deployment, Service, Ingress, HPA
+   - **ArgoCD Application**: Automatically manages deployment in **staging** and **production** environments.
 
-- **MongoDB**: The MongoDB sharded cluster (in a separate namespace) is expected to be available for the backend to consume data. It is managed independently, and its deployment can be done separately as needed.
-- **Backend**: The backend application, responsible for providing data to the frontend, is deployed in its own namespace.
-- **Frontend**: The frontend application connects to the backend service to fetch and display data.
+2. **Backend Application**:
+   - **Deployment Strategy**: Canary Deployment
+   - **Kubernetes Resources**: Deployment, Service, Ingress, HPA, Secret
+   - **ArgoCD Application**: Automatically manages deployment in  **staging**, and **production** environments.
 
-This modular approach promotes scalability, as different components can be independently scaled and managed.
+## Installation and Setup
 
-### 4. Kustomization for Environment Management
+### Step 1: Install ArgoCD
 
-The project utilizes **Kustomize** to manage different environments. Kustomize is used to manage Kubernetes resources and create environment-specific configurations without changing the underlying base resources.
+To get started, you will need to install **ArgoCD** on your Kubernetes cluster. Follow the official ArgoCD installation documentation to get it up and running in your environment.
 
-In this case, Kustomize is used to apply different configurations for backend and frontend in a consistent manner, allowing easy promotion of changes across different environments.
+### Step 2: Configure the LoadBalancer
 
-### 5. ArgoCD Sync
+In the **service.yaml** files for both the frontend and backend, update the **ClusterIP** type services to **LoadBalancer** type, so that they can be accessed externally.
 
-ArgoCD continuously monitors the Git repository and synchronizes the Kubernetes cluster with the defined state. The repository contains the necessary resources, including:
+Once the service is created, you can use the external IP to access the applications. The LoadBalancer will route traffic to the appropriate pod based on the environment's current state.
 
-- Namespaces for both backend and frontend applications.
-- Configurations for backend and frontend deployments, services, and auto-scaling.
-- Sync waves annotations to enforce the correct deployment order.
+### Step 3: Decrypt and View Secrets
 
-### 6. Deployment Flow
+Secrets are encrypted and stored in Kubernetes for both frontend and backend configurations. To view and decrypt them:
 
-The general flow for deploying this application is as follows:
+1. Retrieve the secret using the `kubectl get secrets` command.
+2. Decrypt the secret using appropriate command.
+3. Ensure that the sensitive data is securely handled during the decryption process.
 
-1. **MongoDB (Sharded Cluster)**: The sharded MongoDB cluster is deployed and available in its designated namespace. The backend application can interact with it for database operations.
-2. **Backend**: Once MongoDB is available, the backend application is deployed. The backend service is exposed to the frontend using a Kubernetes service.
-3. **Frontend**: After the backend is deployed and fully operational, the frontend application is deployed. The frontend application connects to the backend service for data and user interactions.
+### Step 4: Setup GitOps and ArgoCD
 
-### 7. Automated Sync and Self-Heal
+1. **Link the repository** to your ArgoCD instance. Create ArgoCD applications for both the frontend and backend.
+2. For each application, set the **sync policy** to auto-sync so that ArgoCD automatically deploys any changes made to the repository.
+3. Make sure the appropriate environment is linked (dev, staging, prod).
 
-ArgoCD automatically manages synchronization of the Kubernetes resources, ensuring that the cluster matches the state in the Git repository. It also supports **self-healing**, meaning that if any manual changes are made directly in the cluster, ArgoCD will automatically correct the cluster to match the Git state.
+### Step 5: Deploy the Backend and Frontend
 
-### 8. GitOps Workflow
+1. **Backend Deployment**:
 
-The GitOps approach provides the following benefits:
+   - The **Canary Deployment** strategy is used for backend. Initially, traffic is routed to the stable backend (blue) version. A small portion of traffic is routed to the new backend (green) version.
+   - Once the green version proves stable, traffic is fully switched, and the stable version becomes green.
 
-- **Declarative Deployment**: The state of the applications is declared in Git. ArgoCD automatically synchronizes the cluster with the Git repository.
-- **Version Control**: Changes to the infrastructure and applications are versioned, making it easy to track updates and roll back if needed.
-- **Seamless Rollback**: If something goes wrong with the deployment, ArgoCD can automatically revert to the last known good state by syncing with the Git repository.
-- **Collaboration**: Teams can collaborate effectively, as all deployment configurations are stored in the Git repository.
+2. **Frontend Deployment**:
+   - The **Blue-Green Deployment** strategy is applied to the frontend.
+   - The blue environment is the stable, live version, and the green environment is the new version of the frontend.
+   - Once validated, traffic is switched to the green environment, making it the live version, while the blue version is held as a backup.
 
-By using GitOps with ArgoCD, this setup automates the entire deployment pipeline, ensuring the backend and frontend applications are continuously deployed in a consistent, repeatable manner across different environments.
+## Deployment Flow
 
-## Getting Started
+1. **For Backend**:
 
-To deploy this project, follow these steps:
+   - **Canary Deployment** helps you gradually roll out updates by directing a small percentage of traffic to the new version (green). This provides the ability to monitor and validate the new version without affecting the entire user base.
+   - ArgoCD will automatically sync any changes from the Git repository to the backend Kubernetes deployments.
 
-1. **Setup ArgoCD** in your Kubernetes cluster (for example, on AWS EKS, GKE, or any other managed Kubernetes service).
-2. **Connect your Git repository** to ArgoCD.
-3. **Deploy MongoDB**, either as a standalone service or a sharded cluster, in a separate namespace.
-4. **Configure and deploy the backend application** using ArgoCD.
-5. **Deploy the frontend application** after the backend is fully deployed.
+2. **For Frontend**:
+   - **Blue-Green Deployment** ensures that users always have access to a stable version of the frontend. You deploy the new version in the green environment, validate it, and then switch traffic to the new version.
+   - The frontend's Kubernetes resources are also managed by ArgoCD for seamless deployments.
 
-This setup ensures that your full-stack application is deployed in the correct order, following GitOps principles with ArgoCD and Kubernetes.
+## How GitOps Works in This Repo
 
+The **GitOps** model ensures that any change made to the Git repository (whether it's code or configuration) is automatically deployed to your Kubernetes cluster through ArgoCD. This method reduces human intervention, providing faster, more reliable deployments.
 
+- **Kubernetes Manifests** (in the `base/` and `overlays/` directories) describe the desired state of your applications.
+- ArgoCD monitors the Git repository, detects changes, and applies them to the Kubernetes cluster.
+
+## Summary
+
+This repository serves as an example of how to implement **GitOps with ArgoCD** for managing **backend and frontend applications**. By using the **Canary Deployment strategy for backend** and the **Blue-Green Deployment strategy for frontend**, we ensure that new versions are released with minimal downtime and risk.
+
+- **Backend**: Canary Deployment for controlled rollouts.
+- **Frontend**: Blue-Green Deployment for zero-downtime updates.
+- **GitOps & ArgoCD**: Automated, continuous deployment from Git to Kubernetes.
+
+By following this setup, developers can ensure reliable, efficient, and automated application deployments while showcasing the power of GitOps principles in modern cloud-native environments.
