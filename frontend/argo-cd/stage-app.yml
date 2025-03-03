@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: frontend-prod
+  namespace: argocd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: frontend
+  source:
+    repoURL: "https://github.com/Vikas-Prince/"
+    targetRevision: HEAD
+    path: overlays/stage
+    kustomize:
+      - namePrefix: blue-
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

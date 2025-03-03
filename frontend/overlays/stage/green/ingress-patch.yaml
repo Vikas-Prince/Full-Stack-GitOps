@@ -2,9 +2,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: frontend-ingress
-  namespace: frontend
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - host: frontend.example.com
@@ -14,6 +11,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: frontend-service   # Will be updated in blue/green overlay
+                name: frontend-green
                 port:
                   number: 80

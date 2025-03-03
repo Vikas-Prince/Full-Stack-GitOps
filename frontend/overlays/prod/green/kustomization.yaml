@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../base/deployment.yaml # Referencing the base deployment file
+  - ../../../base/service.yaml # Referencing the base service file
+  - ../../../base/ingress.yaml # Referencing the base ingress file
+
+patchesStrategicMerge:
+  - deployment-patch.yaml # Patching deployment-specific configurations
+  - service-patch.yaml # Patching service-specific configurations
+  - ingress-patch.yaml # Patching ingress-specific configurations
