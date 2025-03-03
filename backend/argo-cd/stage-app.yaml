@@ -1,17 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: backend-stable
+  name: frontend-prod
+  namespace: argocd
 spec:
   destination:
-    namespace: backend
     server: https://kubernetes.default.svc
+    namespace: backend
   source:
-    repoURL: https://github.com/my-org/gitops-repo.git
+    repoURL: "https://github.com/Vikas-Prince/"
     targetRevision: HEAD
-    path: overlays/blue
+    path: overlays/stage
     kustomize:
-      namePrefix: blue-
+      - namePrefix: canary-
+  project: default
   syncPolicy:
     automated:
       prune: true

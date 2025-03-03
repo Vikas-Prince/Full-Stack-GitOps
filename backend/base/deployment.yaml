@@ -6,8 +6,6 @@ metadata:
   labels:
     app: backend
     maintainer: vikas
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
 spec:
   replicas: 3
   revisionHistoryLimit: 1
@@ -22,8 +20,8 @@ spec:
     spec:
       containers:
         - name: backend-pod
-          image: vikasprince/MERN-Backend:v1
-          imagePullPolicy: ifNotPresent
+          image: vikasprince/MERN-Backend:v1  # Default stable image version
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
@@ -31,7 +29,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: mongo-url
-                  value: querystring
+                  key: querystring
             - name: "PORT"
               value: 8080
       resources:
@@ -39,15 +37,15 @@ spec:
           memory: "1Gi"
           cpu: "1"
         requests:
-          memory: "500Mb"
+          memory: "500Mi"
           cpu: "0.5m"
-      livenessProbes:
+      livenessProbe:
         httpGet:
           path: "/health"
           port: 8080
         initialDelaySeconds: 30
         periodSeconds: 5
-      readinessProbes:
+      readinessProbe:
         httpGet:
           path: "/health"
           port: 8080

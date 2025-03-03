@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-canary-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true" # Mark this as Canary traffic
+    nginx.ingress.kubernetes.io/canary-weight: "10" # 10% of traffic to Canary
+spec:
+  rules:
+      http:
+        paths:
+          - path: / # Define the path for routing traffic
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-canary-service # Service for canary version

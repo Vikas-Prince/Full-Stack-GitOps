@@ -6,7 +6,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: backend
+    app: backend-pod
   ports:
     - protocol: TCP
       port: 8080

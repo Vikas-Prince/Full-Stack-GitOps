@@ -7,7 +7,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: backend.example.com
+    - host: backend.example.com  # Adjust to your domain
       http:
         paths:
           - path: /
