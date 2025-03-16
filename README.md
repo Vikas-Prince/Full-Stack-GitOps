@@ -43,15 +43,15 @@ ArgoCD is used for managing the deployment of both the frontend and backend appl
 
 ## Installation and Setup
 
-# ArgoCD Setup with Hub-Spoke Model
+### ArgoCD Setup with Hub-Spoke Model
 
 To set up ArgoCD using the Hub-Spoke model for your environment, please refer to the detailed guide provided below:
 
-- **Install ArgoCD**: Follow the [ArgoCD installation guide](https://argo-cd.readthedocs.io/en/stable/getting_started/) to install ArgoCD on your Kubernetes cluster.
+**Install ArgoCD**: Follow the [ArgoCD installation guide](https://argo-cd.readthedocs.io/en/stable/getting_started/) to install ArgoCD on your Kubernetes cluster.
 
 For a full walkthrough of setting up ArgoCD with the Hub-Spoke model, refer to the detailed setup instructions linked below:
 
-[ArgoCD Hub-Spoke Model Setup Guide](https://github.com/Vikas-Prince/Full-Stack-Infra-Setup/blob/main/ArgoCD_config/installation.md)
+- **[ArgoCD Hub-Spoke Model Setup Guide](https://github.com/Vikas-Prince/Full-Stack-Infra-Setup/blob/main/ArgoCD_config/installation.md)**
 
 This guide covers everything, including environment-specific configurations and how to manage your deployments using GitOps with ArgoCD.
 
@@ -62,9 +62,9 @@ This guide covers everything, including environment-specific configurations and 
 2. For each application, set the **sync policy** to auto-sync so that ArgoCD automatically deploys any changes made to the repository.
 3. Make sure the appropriate environment is linked (dev, staging, prod).
 
-### Deploy the Backend and Frontend
+## Deploy the Backend and Frontend
 
-## Deployment Flow
+### Deployment Flow
 
 1. **For Backend**:
 
