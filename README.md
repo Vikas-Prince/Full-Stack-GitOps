@@ -1,4 +1,4 @@
-# Full Stack Application Deployment with GitOps and ArgoCD
+# Full Stack Application Deployment with Kustomize, GitOps and ArgoCD
 
 ## Overview
 
@@ -8,29 +8,21 @@ The **GitOps principles** ensure that the entire deployment lifecycle, including
 
 ## Key Concepts and Strategies
 
-### Backend Deployment: **Canary Deployment Strategy**
+### ArgoCD Hub-Spoke Model for Multi-Environment Deployment
 
-For the **backend application**, we have implemented a **Canary Deployment strategy**. This allows us to:
+In this setup, we have used the **ArgoCD Hub-Spoke model** to manage multiple environments (staging and production). The **staging cluster** acts as the **Hub** and is responsible for deploying applications to both the **staging** and **production** clusters (the **Spokes**). This model centralizes deployment management in the staging environment, which simplifies and automates the deployment process across multiple clusters.
 
-- Gradually release the new version of the backend service.
-- Route a small percentage of traffic to the new version while the stable version (canary) continues serving the majority of users.
-- Ensure minimal risk while deploying new versions, and making the rollback easier if issues arise in production.
+- **Staging Cluster (Hub)**: Responsible for managing and deploying the application to both staging and production environments.
+- **Production Cluster (Spoke)**: Receives deployments managed by the staging cluster, ensuring minimal manual intervention and centralized control.
 
-In this setup:
+This model provides greater control over deployments and ensures a streamlined process for rolling out changes to both environments simultaneously.
 
-- The **stable (v1.1)** version of the backend application remains active.
-- A small portion of traffic is routed to the **new (v1.2)** version.
-- If the new version proves stable, traffic is fully shifted to the v1.2 version, and the old v1.1 can be scaled down or removed.
+### Key Benefits of This Approach
 
-### Frontend Deployment: **Blue-Green Deployment Strategy**
-
-For the **frontend application**, a **Blue-Green Deployment strategy** is used. This strategy ensures **zero-downtime updates** for the frontend application. In this setup:
-
-- The **blue** environment serves the current stable version of the frontend.
-- The **green** environment serves the new version of the frontend.
-- After the green version is deployed and validated, traffic is switched from blue to green.
-
-This ensures that the users will always have access to a stable version of the frontend while the new version is tested and validated before it's fully promoted.
+- **Declarative Deployment**: All deployment configurations and updates are managed as code, ensuring repeatability and version control.
+- **Automated Rollbacks**: Using GitOps and ArgoCD, rolling back to a previous stable version can be easily done with minimal downtime.
+- **Minimal Risk**: The Canary deployment strategy reduces the impact of introducing new versions, ensuring that any issues can be addressed quickly without affecting the majority of users.
+- **Centralized Control**: The Hub-Spoke model ensures that the staging cluster manages deployments to both the staging and production environments, minimizing complexity and human error.
 
 ### GitOps with ArgoCD
 
@@ -51,41 +43,26 @@ ArgoCD is used for managing the deployment of both the frontend and backend appl
 
 ## Installation and Setup
 
-### Step 1: Install ArgoCD
+# ArgoCD Setup with Hub-Spoke Model
 
-To get started, you will need to install **ArgoCD** on your Kubernetes cluster. Follow the official ArgoCD installation documentation to get it up and running in your environment.
+To set up ArgoCD using the Hub-Spoke model for your environment, please refer to the detailed guide provided below:
 
-### Step 2: Configure the LoadBalancer
+- **Install ArgoCD**: Follow the [ArgoCD installation guide](https://argo-cd.readthedocs.io/en/stable/getting_started/) to install ArgoCD on your Kubernetes cluster.
 
-In the **service.yaml** files for both the frontend and backend, update the **ClusterIP** type services to **LoadBalancer** type, so that they can be accessed externally.
+For a full walkthrough of setting up ArgoCD with the Hub-Spoke model, refer to the detailed setup instructions linked below:
 
-Once the service is created, you can use the external IP to access the applications. The LoadBalancer will route traffic to the appropriate pod based on the environment's current state.
+[ArgoCD Hub-Spoke Model Setup Guide](https://github.com/Vikas-Prince/Full-Stack-Infra-Setup/blob/main/ArgoCD_config/installation.md)
 
-### Step 3: Decrypt and View Secrets
+This guide covers everything, including environment-specific configurations and how to manage your deployments using GitOps with ArgoCD.
 
-Secrets are encrypted and stored in Kubernetes for both frontend and backend configurations. To view and decrypt them:
 
-1. Retrieve the secret using the `kubectl get secrets` command.
-2. Decrypt the secret using appropriate command.
-3. Ensure that the sensitive data is securely handled during the decryption process.
-
-### Step 4: Setup GitOps and ArgoCD
+### Setup GitOps and ArgoCD
 
 1. **Link the repository** to your ArgoCD instance. Create ArgoCD applications for both the frontend and backend.
 2. For each application, set the **sync policy** to auto-sync so that ArgoCD automatically deploys any changes made to the repository.
 3. Make sure the appropriate environment is linked (dev, staging, prod).
 
-### Step 5: Deploy the Backend and Frontend
-
-1. **Backend Deployment**:
-
-   - The **Canary Deployment** strategy is used for backend. Initially, traffic is routed to the stable backend (blue) version. A small portion of traffic is routed to the new backend (green) version.
-   - Once the green version proves stable, traffic is fully switched, and the stable version becomes green.
-
-2. **Frontend Deployment**:
-   - The **Blue-Green Deployment** strategy is applied to the frontend.
-   - The blue environment is the stable, live version, and the green environment is the new version of the frontend.
-   - Once validated, traffic is switched to the green environment, making it the live version, while the blue version is held as a backup.
+### Deploy the Backend and Frontend
 
 ## Deployment Flow
 
@@ -100,17 +77,16 @@ Secrets are encrypted and stored in Kubernetes for both frontend and backend con
 
 ## How GitOps Works in This Repo
 
-The **GitOps** model ensures that any change made to the Git repository (whether it's code or configuration) is automatically deployed to your Kubernetes cluster through ArgoCD. This method reduces human intervention, providing faster, more reliable deployments.
+The **GitOps** model ensures that any change made to the Git repository (whether it's code or configuration) is automatically deployed to your Kubernetes cluster through **ArgoCD**. This method reduces human intervention, providing faster, more reliable deployments.
 
-- **Kubernetes Manifests** (in the `base/` and `overlays/` directories) describe the desired state of your applications.
-- ArgoCD monitors the Git repository, detects changes, and applies them to the Kubernetes cluster.
+- **Kustomize** (in the `base/` and `overlays/` directories) is used for resource management, allowing you to create customized Kubernetes resources for different environments (such as dev, staging, and production) without duplicating the base configuration. 
+- **ArgoCD** monitors the Git repository, detects changes, and applies them to the Kubernetes cluster using the customized resources from Kustomize.
 
-## Summary
 
-This repository serves as an example of how to implement **GitOps with ArgoCD** for managing **backend and frontend applications**. By using the **Canary Deployment strategy for backend** and the **Blue-Green Deployment strategy for frontend**, we ensure that new versions are released with minimal downtime and risk.
+## Conclusion
 
-- **Backend**: Canary Deployment for controlled rollouts.
-- **Frontend**: Blue-Green Deployment for zero-downtime updates.
-- **GitOps & ArgoCD**: Automated, continuous deployment from Git to Kubernetes.
+This repository demonstrates a robust **GitOps** approach for deploying **frontend** and **backend** applications using **ArgoCD**. The **Hub-Spoke model** allows centralized management of deployments across multiple environments, with the **staging cluster** acting as the Hub, and the **production cluster** as the Spoke.
 
-By following this setup, developers can ensure reliable, efficient, and automated application deployments while showcasing the power of GitOps principles in modern cloud-native environments.
+The use of **Canary Deployment** for the backend and **Blue-Green Deployment** for the frontend ensures minimal downtime and risk during rollouts. With **GitOps**, deployments are automated, version-controlled, and declarative, reducing manual intervention and ensuring consistency.
+
+This setup provides a streamlined, scalable, and reliable method for managing application deployments across multiple environments, making it ideal for modern cloud-native applications.
