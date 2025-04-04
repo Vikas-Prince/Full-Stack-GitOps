@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: frontend-container
-          image: vikasprince/MERN-Frontend:v1
+          image: vikasprince/fullstack-frontend:v1.1.1
